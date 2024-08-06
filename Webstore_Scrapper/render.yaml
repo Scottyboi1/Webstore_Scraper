@@ -3,7 +3,7 @@ services:
     name: rust-api
     env: docker
     buildCommand: "cargo build --release"
-    startCommand: "./target/release/Goodwill_Web_Scrapper"
+    startCommand: "./target/release/Webstore_Scrapper/Goodwill_Web_Scrapper"
     plan: free
     regions:
       - oregon
