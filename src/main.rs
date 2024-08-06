@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpServer, Responder, HttpRequest};
+use actix_web::{web, App, HttpServer, Responder, HttpResponse, HttpRequest};
 use reqwest::blocking::get;
 use scraper::{Html, Selector};
 use serde_json::Value;
@@ -6,7 +6,6 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::fs;
 use anyhow::{Context, Result};
-use actix_web::{web, App, HttpServer, HttpResponse, Responder};
 use std::env;
 
 fn scrape_goodwill(query: &str, writer: &mut dyn Write) -> Result<()> {
