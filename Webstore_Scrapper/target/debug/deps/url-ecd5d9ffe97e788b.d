@@ -1,0 +1,11 @@
+D:\Scott Develops\Web_scrapper\web_scrapper\Webstore_Scrapper\Webstore_Scrapper\target\debug\deps\liburl-ecd5d9ffe97e788b.rmeta: C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\lib.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\host.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\origin.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\parser.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\path_segments.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\slicing.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\quirks.rs
+
+D:\Scott Develops\Web_scrapper\web_scrapper\Webstore_Scrapper\Webstore_Scrapper\target\debug\deps\url-ecd5d9ffe97e788b.d: C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\lib.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\host.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\origin.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\parser.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\path_segments.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\slicing.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\quirks.rs
+
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\lib.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\host.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\origin.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\parser.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\path_segments.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\slicing.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\url-2.5.2\src\quirks.rs:

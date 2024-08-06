@@ -1,0 +1,12 @@
+D:\Scott Develops\Web_scrapper\web_scrapper\Webstore_Scrapper\Webstore_Scrapper\target\debug\deps\libmac-66c13a7e1dd95310.rmeta: C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\lib.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\test.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\mem.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\format.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\syntax_ext.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\matches.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\inspect.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\cfg.rs
+
+D:\Scott Develops\Web_scrapper\web_scrapper\Webstore_Scrapper\Webstore_Scrapper\target\debug\deps\mac-66c13a7e1dd95310.d: C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\lib.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\test.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\mem.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\format.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\syntax_ext.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\matches.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\inspect.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\cfg.rs
+
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\lib.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\test.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\mem.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\format.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\syntax_ext.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\matches.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\inspect.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\mac-0.1.1\src\cfg.rs:
