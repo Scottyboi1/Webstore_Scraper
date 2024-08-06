@@ -1,88 +1,79 @@
+use actix_web::{web, App, HttpServer, Responder, HttpRequest};
 use reqwest::blocking::get;
 use scraper::{Html, Selector};
-use std::error::Error;
-use std::fs::File;
-use std::io::{Write, BufWriter};
-use std::fs;
 use serde_json::Value;
+use std::fs::File;
+use std::io::{BufWriter, Write};
+use std::fs;
+use anyhow::{Context, Result};
 
-fn scrape_goodwill(base_url: &str, writer: &mut dyn Write) -> Result<(), Box<dyn Error>> {
+fn scrape_goodwill(query: &str, writer: &mut dyn Write) -> Result<()> {
+    let base_url = "https://www.goodwillfinds.com/search/?q=";
+    let search_url = format!("{}{}", base_url, query);
     let mut start = 0;
     let sz = 48;
     let mut products_found;
 
     loop {
-        let url = format!("{}?start={}&sz={}", base_url, start, sz);
+        let url = format!("{}&start={}&sz={}", search_url, start, sz);
         println!("Scraping URL: {}", url);
 
-        // Fetch the webpage
-        let response = get(&url)?;
-        let body = response.text()?;
+        let response = get(&url).context("Failed to fetch Goodwill URL")?;
+        let body = response.text().context("Failed to get response text")?;
 
-        // Parse the HTML
         let document = Html::parse_document(&body);
         let product_selector = Selector::parse(".b-product_tile-actions").unwrap();
 
-        // Scrape product data
         products_found = 0;
         for product in document.select(&product_selector) {
             products_found += 1;
-            // Extract the data-analytics attribute
             if let Some(data_analytics) = product.value().attr("data-analytics") {
-                // Parse the JSON data
                 if let Ok(analytics) = serde_json::from_str::<Value>(data_analytics) {
                     let name = analytics["name"].as_str().unwrap_or("N/A").to_string();
                     let price = analytics["price"].as_str().unwrap_or("N/A").to_string();
                     let description = analytics["category"].as_str().unwrap_or("N/A").to_string();
 
-                    // Write to file
                     writeln!(writer, "{},{},{}", name, price, description)?;
                 }
             }
         }
 
-        // Break if no more products are found on the current page
         if products_found == 0 {
             break;
         }
 
-        // Increment the start for the next page
         start += sz;
     }
 
     Ok(())
 }
 
-fn scrape_ebay(base_url: &str, writer: &mut dyn Write) -> Result<(), Box<dyn Error>> {
+fn scrape_ebay(query: &str, writer: &mut dyn Write) -> Result<()> {
+    let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=";
+    let search_url = format!("{}{}", base_url, query);
     let mut page = 1;
     let mut products_found;
 
     loop {
-        let url = format!("{}&_pgn={}", base_url, page);
+        let url = format!("{}&_sacat=0&_nls=2&_dmd=2&_ipg=240&_pgn={}", search_url, page);
         println!("Scraping URL: {}", url);
 
-        // Fetch the webpage
-        let response = get(&url)?;
-        let body = response.text()?;
+        let response = get(&url).context("Failed to fetch eBay URL")?;
+        let body = response.text().context("Failed to get response text")?;
 
-        // Parse the HTML
         let document = Html::parse_document(&body);
         let product_selector = Selector::parse(".s-item").unwrap();
         let title_selector = Selector::parse(".s-item__title").unwrap();
         let price_selector = Selector::parse(".s-item__price").unwrap();
-        let next_page_selector = Selector::parse(".pagination__next").unwrap();
         let next_page_disabled_selector = Selector::parse(".pagination__next[aria-disabled='true']").unwrap();
 
-        // Scrape product data
         products_found = 0;
         for product in document.select(&product_selector) {
             products_found += 1;
 
-            // Extract and clean title
             let raw_title = product.select(&title_selector).next()
                 .map_or("N/A".to_string(), |n| n.text().collect::<Vec<_>>().join("").trim().to_string());
 
-            // Extract and clean price
             let raw_price = product.select(&price_selector).next()
                 .map_or("N/A".to_string(), |p| p.inner_html().trim().to_string());
             let price = raw_price.replace("<!--F#f_0-->", "")
@@ -90,50 +81,62 @@ fn scrape_ebay(base_url: &str, writer: &mut dyn Write) -> Result<(), Box<dyn Err
                                  .trim()
                                  .to_string();
 
-            // Write to file
             writeln!(writer, "{},{}", raw_title, price)?;
         }
 
-        // Check for "next page" button and if it's disabled
         let next_page_disabled = document.select(&next_page_disabled_selector).next();
-
-        // Break if no more products are found on the current page or the next page button is disabled
         if products_found == 0 || next_page_disabled.is_some() {
             break;
         }
 
-        // Increment the page for the next iteration
         page += 1;
     }
 
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    // List of URLs to scrape
-    let goodwill_url = "https://www.goodwillfinds.com/electronics/computers-and-tablets/desktop/";
-    let ebay_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=desktop&_sacat=0&LH_ItemCondition=3000&LH_BIN=1&_udhi=60&_oaa=1&Form%2520Factor=Mini%2520Pc%7CMini%2520Desktop&_dcat=179&rt=nc&_ipg=240";
+async fn search(req: HttpRequest) -> impl Responder {
+    let query_string = req.query_string().to_string();
+    let query_value = query_string.split('=').nth(1).unwrap_or("").to_string();
 
-    // Delete the old CSV file if it exists
-    let file_path = "output.csv";
-    if fs::metadata(file_path).is_ok() {
-        fs::remove_file(file_path)?;
+    // Clone the query_value for use inside the blocking closure
+    let query_value_clone = query_value.clone();
+
+    let result = web::block(move || {
+        let file_path = "output.csv";
+        if fs::metadata(file_path).is_ok() {
+            fs::remove_file(file_path).unwrap();
+        }
+
+        let file = File::create(file_path).unwrap();
+        let mut writer = BufWriter::new(file);
+
+        writeln!(writer, "Name,Price,Description").unwrap();
+
+        // Use the cloned query_value for scraping
+        scrape_goodwill(&query_value_clone, &mut writer)?;
+        scrape_ebay(&query_value_clone, &mut writer)?;
+
+        writer.flush().unwrap();
+
+        Ok::<_, anyhow::Error>(())
+    }).await;
+
+    // Return a response based on the result
+    match result {
+        Ok(Ok(())) => format!("Data scraped and saved to output.csv for query: {}", query_value),
+        Ok(Err(e)) => format!("An error occurred: {}", e),
+        Err(e) => format!("Failed to execute: {:?}", e),
     }
+}
 
-    // Create a new file and writer
-    let file = File::create(file_path)?;
-    let mut writer = BufWriter::new(file);
-
-    // Write headers
-    writeln!(writer, "Name,Price,Description")?;
-
-    // Scrape data from each URL
-    scrape_goodwill(goodwill_url, &mut writer)?;
-    scrape_ebay(ebay_url, &mut writer)?;
-
-    // Flush the writer to ensure all data is written
-    writer.flush()?;
-
-    println!("Data scraped and saved to output.csv");
-    Ok(())
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .route("/search", web::get().to(search))
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }

@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: rust-api
+    env: docker
+    buildCommand: "cargo build --release"
+    startCommand: "./target/release/your_binary_name"
+    plan: free
+    regions:
+      - oregon

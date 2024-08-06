@@ -1,0 +1,10 @@
+D:\Scott Develops\Web_scrapper\web_scrapper\Webstore_Scrapper\Webstore_Scrapper\target\debug\deps\libactix_utils-06909f946842058c.rmeta: C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src/lib.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\counter.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\mod.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\either.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\poll_fn.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\ready.rs
+
+D:\Scott Develops\Web_scrapper\web_scrapper\Webstore_Scrapper\Webstore_Scrapper\target\debug\deps\actix_utils-06909f946842058c.d: C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src/lib.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\counter.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\mod.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\either.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\poll_fn.rs C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\ready.rs
+
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src/lib.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\counter.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\mod.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\either.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\poll_fn.rs:
+C:\Users\scott\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-utils-3.0.1\src\future\ready.rs:
