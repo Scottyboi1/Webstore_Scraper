@@ -6,6 +6,8 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::fs;
 use anyhow::{Context, Result};
+use actix_web::{web, App, HttpServer, HttpResponse, Responder};
+use std::env;
 
 fn scrape_goodwill(query: &str, writer: &mut dyn Write) -> Result<()> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
@@ -96,47 +98,56 @@ fn scrape_ebay(query: &str, writer: &mut dyn Write) -> Result<()> {
 }
 
 async fn search(req: HttpRequest) -> impl Responder {
-    let query_string = req.query_string().to_string();
+    let query_string = req.query_string();
     let query_value = query_string.split('=').nth(1).unwrap_or("").to_string();
 
     // Clone the query_value for use inside the blocking closure
     let query_value_clone = query_value.clone();
 
     let result = web::block(move || {
+        // Define the file path
         let file_path = "output.csv";
+
+        // Remove the old file if it exists
         if fs::metadata(file_path).is_ok() {
-            fs::remove_file(file_path).unwrap();
+            fs::remove_file(file_path)?;
         }
 
-        let file = File::create(file_path).unwrap();
+        // Create a new file and writer
+        let file = File::create(file_path)?;
         let mut writer = BufWriter::new(file);
 
-        writeln!(writer, "Name,Price,Description").unwrap();
+        // Write headers
+        writeln!(writer, "Name,Price,Description")?;
 
-        // Use the cloned query_value for scraping
+        // Scrape data using the query value
         scrape_goodwill(&query_value_clone, &mut writer)?;
         scrape_ebay(&query_value_clone, &mut writer)?;
 
-        writer.flush().unwrap();
+        // Ensure all data is written to the file
+        writer.flush()?;
 
-        Ok::<_, anyhow::Error>(())
+        Ok::<(), anyhow::Error>(())
     }).await;
 
     // Return a response based on the result
     match result {
-        Ok(Ok(())) => format!("Data scraped and saved to output.csv for query: {}", query_value),
-        Ok(Err(e)) => format!("An error occurred: {}", e),
-        Err(e) => format!("Failed to execute: {:?}", e),
+        Ok(Ok(())) => HttpResponse::Ok().body(format!("Data scraped and saved to output.csv for query: {}", query_value)),
+        Ok(Err(e)) => HttpResponse::InternalServerError().body(format!("An error occurred: {}", e)),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Failed to execute: {:?}", e)),
     }
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Get the port from the environment variable or default to 8080
+    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+
     HttpServer::new(|| {
         App::new()
             .route("/search", web::get().to(search))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(format!("0.0.0.0:{}", port))? // Bind to all interfaces and use the port from the environment variable
     .run()
     .await
 }
