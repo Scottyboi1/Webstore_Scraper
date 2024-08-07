@@ -3,7 +3,7 @@
 This is a rust program that scrapes listings from Goodwillfinds and Ebay.
 ## API Usage
 ### Python Example
-'''
+```
 import requests
 def fetch_data(query):
     response = requests.get(f'https://webstore-scrapper.onrender.com/search?query={query}')
@@ -14,4 +14,4 @@ def fetch_data(query):
     else:
         print("Failed to retrieve data:", response.status_code)
 fetch_data('desktop')
-'''
+```
