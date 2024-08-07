@@ -3,7 +3,7 @@ use reqwest::Client;
 use scraper::{Html, Selector};
 use serde_json::Value;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::{BufWriter, Write, Read};
 use std::fs;
 use anyhow::{Context, Result};
 use std::env;
@@ -20,7 +20,6 @@ async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -
         let url = format!("{}&start={}&sz={}", search_url, start, sz);
         println!("Scraping URL: {}", url);
 
-        // Use timeout to limit the scraping time
         let result = timeout(Duration::from_secs(60), client.get(&url).send()).await?;
         let response = result.context("Failed to fetch Goodwill URL")?;
         let body = response.text().await.context("Failed to get response text")?;
@@ -62,7 +61,6 @@ async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Re
         let url = format!("{}&_sacat=0&_nls=2&_dmd=2&_ipg=240&_pgn={}", search_url, page);
         println!("Scraping URL: {}", url);
 
-        // Use timeout to limit the scraping time
         let result = timeout(Duration::from_secs(60), client.get(&url).send()).await?;
         let response = result.context("Failed to fetch eBay URL")?;
         let body = response.text().await.context("Failed to get response text")?;
@@ -131,12 +129,19 @@ async fn search(req: HttpRequest) -> impl Responder {
         Ok::<(), anyhow::Error>(())
     }).await;
 
-    // Return a response based on the result
-    match result {
-        Ok(Ok(())) => HttpResponse::Ok().body(format!("Data scraped and saved to output.csv for query: {}", query_value)),
-        Ok(Err(e)) => HttpResponse::InternalServerError().body(format!("An error occurred: {}", e)),
-        Err(_) => HttpResponse::InternalServerError().body("Request timed out"),
+    // Check for timeout and other errors
+    if result.is_err() {
+        return HttpResponse::InternalServerError().body("Request timed out or failed");
     }
+
+    // Read the contents of the CSV file to send in the response
+    let mut file = File::open(file_path).unwrap();
+    let mut contents = Vec::new();
+    file.read_to_end(&mut contents).unwrap();
+
+    HttpResponse::Ok()
+        .content_type("text/csv")
+        .body(contents)
 }
 
 #[actix_web::main]
