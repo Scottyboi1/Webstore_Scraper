@@ -128,14 +128,17 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Determine the response based on the results
     if goodwill_result.is_err() && ebay_result.is_err() {
         return HttpResponse::InternalServerError().body("Failed to scrape data from both Goodwill and eBay");
-    } else if let Err(e) = goodwill_result {
-        return HttpResponse::InternalServerError().body(format!("Failed to scrape data from Goodwill: {}", e));
-    } else if let Err(e) = ebay_result {
-        return HttpResponse::InternalServerError().body(format!("Failed to scrape data from eBay: {}", e));
     }
 
-    HttpResponse::Ok().body(format!("Data scraped and saved to output.csv for query: {}", query_value))
+    // Read the output.csv file and return its contents
+    match fs::read_to_string(file_path) {
+        Ok(contents) => HttpResponse::Ok()
+            .content_type("text/csv")
+            .body(contents),
+        Err(_) => HttpResponse::InternalServerError().body("Failed to read the output CSV file"),
+    }
 }
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
