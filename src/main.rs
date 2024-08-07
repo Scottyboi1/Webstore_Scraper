@@ -1,5 +1,5 @@
 use actix_web::{web, App, HttpServer, Responder, HttpResponse, HttpRequest};
-use reqwest::blocking::get;
+use reqwest::Client;
 use scraper::{Html, Selector};
 use serde_json::Value;
 use std::fs::File;
@@ -7,8 +7,9 @@ use std::io::{BufWriter, Write};
 use std::fs;
 use anyhow::{Context, Result};
 use std::env;
+use tokio::time::{timeout, Duration};
 
-fn scrape_goodwill(query: &str, writer: &mut dyn Write) -> Result<()> {
+async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
     let search_url = format!("{}{}", base_url, query);
     let mut start = 0;
@@ -19,8 +20,10 @@ fn scrape_goodwill(query: &str, writer: &mut dyn Write) -> Result<()> {
         let url = format!("{}&start={}&sz={}", search_url, start, sz);
         println!("Scraping URL: {}", url);
 
-        let response = get(&url).context("Failed to fetch Goodwill URL")?;
-        let body = response.text().context("Failed to get response text")?;
+        // Use timeout to limit the scraping time
+        let result = timeout(Duration::from_secs(60), client.get(&url).send()).await?;
+        let response = result.context("Failed to fetch Goodwill URL")?;
+        let body = response.text().await.context("Failed to get response text")?;
 
         let document = Html::parse_document(&body);
         let product_selector = Selector::parse(".b-product_tile-actions").unwrap();
@@ -49,7 +52,7 @@ fn scrape_goodwill(query: &str, writer: &mut dyn Write) -> Result<()> {
     Ok(())
 }
 
-fn scrape_ebay(query: &str, writer: &mut dyn Write) -> Result<()> {
+async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
     let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=";
     let search_url = format!("{}{}", base_url, query);
     let mut page = 1;
@@ -59,8 +62,10 @@ fn scrape_ebay(query: &str, writer: &mut dyn Write) -> Result<()> {
         let url = format!("{}&_sacat=0&_nls=2&_dmd=2&_ipg=240&_pgn={}", search_url, page);
         println!("Scraping URL: {}", url);
 
-        let response = get(&url).context("Failed to fetch eBay URL")?;
-        let body = response.text().context("Failed to get response text")?;
+        // Use timeout to limit the scraping time
+        let result = timeout(Duration::from_secs(60), client.get(&url).send()).await?;
+        let response = result.context("Failed to fetch eBay URL")?;
+        let body = response.text().await.context("Failed to get response text")?;
 
         let document = Html::parse_document(&body);
         let product_selector = Selector::parse(".s-item").unwrap();
@@ -100,32 +105,29 @@ async fn search(req: HttpRequest) -> impl Responder {
     let query_string = req.query_string();
     let query_value = query_string.split('=').nth(1).unwrap_or("").to_string();
 
-    // Clone the query_value for use inside the blocking closure
-    let query_value_clone = query_value.clone();
+    // Create a reqwest client
+    let client = Client::new();
 
-    let result = web::block(move || {
-        // Define the file path
-        let file_path = "output.csv";
+    // Define the file path
+    let file_path = "output.csv";
 
-        // Remove the old file if it exists
-        if fs::metadata(file_path).is_ok() {
-            fs::remove_file(file_path)?;
-        }
+    // Remove the old file if it exists
+    if fs::metadata(file_path).is_ok() {
+        fs::remove_file(file_path).unwrap();
+    }
 
-        // Create a new file and writer
-        let file = File::create(file_path)?;
-        let mut writer = BufWriter::new(file);
+    // Create a new file and writer
+    let file = File::create(file_path).unwrap();
+    let mut writer = BufWriter::new(file);
 
-        // Write headers
-        writeln!(writer, "Name,Price,Description")?;
+    // Write headers
+    writeln!(writer, "Name,Price,Description").unwrap();
 
-        // Scrape data using the query value
-        scrape_goodwill(&query_value_clone, &mut writer)?;
-        scrape_ebay(&query_value_clone, &mut writer)?;
-
-        // Ensure all data is written to the file
-        writer.flush()?;
-
+    // Perform the scraping with a timeout
+    let result = timeout(Duration::from_secs(60), async {
+        scrape_goodwill(&client, &query_value, &mut writer).await?;
+        scrape_ebay(&client, &query_value, &mut writer).await?;
+        writer.flush().unwrap();
         Ok::<(), anyhow::Error>(())
     }).await;
 
@@ -133,7 +135,7 @@ async fn search(req: HttpRequest) -> impl Responder {
     match result {
         Ok(Ok(())) => HttpResponse::Ok().body(format!("Data scraped and saved to output.csv for query: {}", query_value)),
         Ok(Err(e)) => HttpResponse::InternalServerError().body(format!("An error occurred: {}", e)),
-        Err(e) => HttpResponse::InternalServerError().body(format!("Failed to execute: {:?}", e)),
+        Err(_) => HttpResponse::InternalServerError().body("Request timed out"),
     }
 }
 
