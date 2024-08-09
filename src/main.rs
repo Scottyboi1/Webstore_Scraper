@@ -6,9 +6,9 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::fs;
 use anyhow::{Context, Result};
-use std::env;
 use std::time::{Instant, Duration};
 use tokio::time::timeout;
+use std::env;
 
 async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
@@ -119,26 +119,26 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Create a reqwest client
     let client = Client::new();
 
-    // Perform the scraping with individual 30-second timeouts concurrently
-    let goodwill_future = scrape_goodwill(&client, &query_value);
-    let ebay_future = scrape_ebay(&client, &query_value);
-
-    let scrape_result = tokio::try_join!(
-        timeout(Duration::from_secs(30), goodwill_future),
-        timeout(Duration::from_secs(30), ebay_future)
-    );
-
-    // Handle errors in scraping and combine results
-    let mut combined_output = String::new();
-    match scrape_result {
-        Ok((Ok(goodwill_data), Ok(ebay_data))) => {
-            combined_output.push_str(&goodwill_data);
-            combined_output.push_str(&ebay_data);
-        }
+    // Scrape Goodwill with a 30-second timeout
+    let goodwill_data = match timeout(Duration::from_secs(30), scrape_goodwill(&client, &query_value)).await {
+        Ok(Ok(data)) => data,
         _ => {
-            return HttpResponse::InternalServerError().body("Failed to scrape data from Goodwill and/or eBay");
+            println!("Goodwill scraping failed or timed out.");
+            String::new()  // Proceed even if Goodwill fails
         }
-    }
+    };
+
+    // Scrape eBay with a 30-second timeout
+    let ebay_data = match timeout(Duration::from_secs(30), scrape_ebay(&client, &query_value)).await {
+        Ok(Ok(data)) => data,
+        _ => {
+            println!("eBay scraping failed or timed out.");
+            String::new()  // Proceed even if eBay fails
+        }
+    };
+
+    // Combine the data from both scrapes
+    let combined_output = format!("{}\n{}", goodwill_data, ebay_data);
 
     // Write the combined output to the CSV file
     let file_path = "output.csv";
