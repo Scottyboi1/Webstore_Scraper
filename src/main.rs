@@ -9,16 +9,17 @@ use anyhow::{Context, Result};
 use std::env;
 use std::time::{Instant, Duration};
 
-async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write, start_time: Instant) -> Result<()> {
+async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
     let search_url = format!("{}{}", base_url, query);
     let mut start = 0;
     let sz = 48;
     let mut products_found;
+    let start_time = Instant::now();
 
-    loop {  // No longer limiting to 10 pages
-        if start_time.elapsed() >= Duration::from_secs(60) {
-            println!("Reached 60 seconds timeout for Goodwill, stopping scrape.");
+    loop {
+        if start_time.elapsed() >= Duration::from_secs(30) {
+            println!("Reached 30 seconds timeout for Goodwill, stopping scrape.");
             break;
         }
 
@@ -55,15 +56,16 @@ async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write, s
     Ok(())
 }
 
-async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write, start_time: Instant) -> Result<()> {
+async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
     let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=";
     let search_url = format!("{}{}", base_url, query);
     let mut page = 1;
     let mut products_found;
+    let start_time = Instant::now();
 
-    loop {  // No longer limiting to 10 pages
-        if start_time.elapsed() >= Duration::from_secs(60) {
-            println!("Reached 60 seconds timeout for eBay, stopping scrape.");
+    loop {
+        if start_time.elapsed() >= Duration::from_secs(30) {
+            println!("Reached 30 seconds timeout for eBay, stopping scrape.");
             break;
         }
 
@@ -129,12 +131,9 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Write headers
     writeln!(writer, "Name,Price,Description").unwrap();
 
-    // Get the current time to start the timer
-    let start_time = Instant::now();
-
-    // Perform the scraping with the timeout
-    let goodwill_result = scrape_goodwill(&client, &query_value, &mut writer, start_time).await;
-    let ebay_result = scrape_ebay(&client, &query_value, &mut writer, start_time).await;
+    // Perform the scraping with individual 30-second timeouts
+    let goodwill_result = scrape_goodwill(&client, &query_value, &mut writer).await;
+    let ebay_result = scrape_ebay(&client, &query_value, &mut writer).await;
 
     // Ensure all data is written to the file
     writer.flush().unwrap();
