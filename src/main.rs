@@ -8,6 +8,7 @@ use std::fs;
 use anyhow::{Context, Result};
 use std::env;
 use std::time::{Instant, Duration};
+use tokio::time::timeout;
 
 async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
@@ -131,16 +132,21 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Write headers
     writeln!(writer, "Name,Price,Description").unwrap();
 
-    // Perform the scraping with individual 30-second timeouts
-    let goodwill_result = scrape_goodwill(&client, &query_value, &mut writer).await;
-    let ebay_result = scrape_ebay(&client, &query_value, &mut writer).await;
+    // Perform the scraping with individual 30-second timeouts concurrently
+    let goodwill_future = scrape_goodwill(&client, &query_value, &mut writer);
+    let ebay_future = scrape_ebay(&client, &query_value, &mut writer);
+
+    let scrape_result = tokio::try_join!(
+        timeout(Duration::from_secs(30), goodwill_future),
+        timeout(Duration::from_secs(30), ebay_future)
+    );
 
     // Ensure all data is written to the file
     writer.flush().unwrap();
 
-    // Determine the response based on the results
-    if goodwill_result.is_err() && ebay_result.is_err() {
-        return HttpResponse::InternalServerError().body("Failed to scrape data from both Goodwill and eBay");
+    // Handle errors in scraping
+    if let Err(e) = scrape_result {
+        println!("Error during scraping: {:?}", e);
     }
 
     // Read the output.csv file and return its contents
