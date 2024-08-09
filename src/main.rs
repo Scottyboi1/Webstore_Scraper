@@ -7,15 +7,21 @@ use std::io::{BufWriter, Write};
 use std::fs;
 use anyhow::{Context, Result};
 use std::env;
+use std::time::{Instant, Duration};
 
-async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
+async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write, start_time: Instant) -> Result<()> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
     let search_url = format!("{}{}", base_url, query);
     let mut start = 0;
     let sz = 48;
     let mut products_found;
 
-    for _ in 0..10 {  // Limit to 10 pages
+    loop {  // No longer limiting to 10 pages
+        if start_time.elapsed() >= Duration::from_secs(60) {
+            println!("Reached 60 seconds timeout for Goodwill, stopping scrape.");
+            break;
+        }
+
         let url = format!("{}&start={}&sz={}", search_url, start, sz);
         println!("Scraping URL: {}", url);
 
@@ -49,13 +55,18 @@ async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -
     Ok(())
 }
 
-async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
+async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write, start_time: Instant) -> Result<()> {
     let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=";
     let search_url = format!("{}{}", base_url, query);
     let mut page = 1;
     let mut products_found;
 
-    for _ in 0..10 {  // Limit to 10 pages
+    loop {  // No longer limiting to 10 pages
+        if start_time.elapsed() >= Duration::from_secs(60) {
+            println!("Reached 60 seconds timeout for eBay, stopping scrape.");
+            break;
+        }
+
         let url = format!("{}&_sacat=0&_nls=2&_dmd=2&_ipg=240&_pgn={}", search_url, page);
         println!("Scraping URL: {}", url);
 
@@ -118,9 +129,12 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Write headers
     writeln!(writer, "Name,Price,Description").unwrap();
 
-    // Perform the scraping
-    let goodwill_result = scrape_goodwill(&client, &query_value, &mut writer).await;
-    let ebay_result = scrape_ebay(&client, &query_value, &mut writer).await;
+    // Get the current time to start the timer
+    let start_time = Instant::now();
+
+    // Perform the scraping with the timeout
+    let goodwill_result = scrape_goodwill(&client, &query_value, &mut writer, start_time).await;
+    let ebay_result = scrape_ebay(&client, &query_value, &mut writer, start_time).await;
 
     // Ensure all data is written to the file
     writer.flush().unwrap();
@@ -138,7 +152,6 @@ async fn search(req: HttpRequest) -> impl Responder {
         Err(_) => HttpResponse::InternalServerError().body("Failed to read the output CSV file"),
     }
 }
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
