@@ -10,13 +10,14 @@ use std::env;
 use std::time::{Instant, Duration};
 use tokio::time::timeout;
 
-async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
+async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
     let search_url = format!("{}{}", base_url, query);
     let mut start = 0;
     let sz = 48;
     let mut products_found;
     let start_time = Instant::now();
+    let mut output = String::new();
 
     loop {
         if start_time.elapsed() >= Duration::from_secs(30) {
@@ -42,7 +43,7 @@ async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -
                     let price = analytics["price"].as_str().unwrap_or("N/A").to_string();
                     let description = analytics["category"].as_str().unwrap_or("N/A").to_string();
 
-                    writeln!(writer, "{},{},{}", name, price, description)?;
+                    output.push_str(&format!("{},{},{}\n", name, price, description));
                 }
             }
         }
@@ -54,15 +55,16 @@ async fn scrape_goodwill(client: &Client, query: &str, writer: &mut dyn Write) -
         start += sz;
     }
 
-    Ok(())
+    Ok(output)
 }
 
-async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Result<()> {
+async fn scrape_ebay(client: &Client, query: &str) -> Result<String> {
     let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=";
     let search_url = format!("{}{}", base_url, query);
     let mut page = 1;
     let mut products_found;
     let start_time = Instant::now();
+    let mut output = String::new();
 
     loop {
         if start_time.elapsed() >= Duration::from_secs(30) {
@@ -96,7 +98,7 @@ async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Re
                                  .trim()
                                  .to_string();
 
-            writeln!(writer, "{},{}", raw_title, price)?;
+            output.push_str(&format!("{},{}\n", raw_title, price));
         }
 
         let next_page_disabled = document.select(&next_page_disabled_selector).next();
@@ -107,7 +109,7 @@ async fn scrape_ebay(client: &Client, query: &str, writer: &mut dyn Write) -> Re
         page += 1;
     }
 
-    Ok(())
+    Ok(output)
 }
 
 async fn search(req: HttpRequest) -> impl Responder {
@@ -117,37 +119,31 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Create a reqwest client
     let client = Client::new();
 
-    // Define the file path
-    let file_path = "output.csv";
-
-    // Remove the old file if it exists
-    if fs::metadata(file_path).is_ok() {
-        fs::remove_file(file_path).unwrap();
-    }
-
-    // Create a new file and writer
-    let file = File::create(file_path).unwrap();
-    let mut writer = BufWriter::new(file);
-
-    // Write headers
-    writeln!(writer, "Name,Price,Description").unwrap();
-
     // Perform the scraping with individual 30-second timeouts concurrently
-    let goodwill_future = scrape_goodwill(&client, &query_value, &mut writer);
-    let ebay_future = scrape_ebay(&client, &query_value, &mut writer);
+    let goodwill_future = scrape_goodwill(&client, &query_value);
+    let ebay_future = scrape_ebay(&client, &query_value);
 
     let scrape_result = tokio::try_join!(
         timeout(Duration::from_secs(30), goodwill_future),
         timeout(Duration::from_secs(30), ebay_future)
     );
 
-    // Ensure all data is written to the file
-    writer.flush().unwrap();
-
-    // Handle errors in scraping
-    if let Err(e) = scrape_result {
-        println!("Error during scraping: {:?}", e);
+    // Handle errors in scraping and combine results
+    let mut combined_output = String::new();
+    match scrape_result {
+        Ok((Ok(goodwill_data), Ok(ebay_data))) => {
+            combined_output.push_str(&goodwill_data);
+            combined_output.push_str(&ebay_data);
+        }
+        _ => {
+            return HttpResponse::InternalServerError().body("Failed to scrape data from Goodwill and/or eBay");
+        }
     }
+
+    // Write the combined output to the CSV file
+    let file_path = "output.csv";
+    let mut file = File::create(file_path).unwrap();
+    file.write_all(combined_output.as_bytes()).unwrap();
 
     // Read the output.csv file and return its contents
     match fs::read_to_string(file_path) {
