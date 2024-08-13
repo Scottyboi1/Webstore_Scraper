@@ -1,6 +1,6 @@
 use actix_web::{web, App, HttpServer, Responder, HttpResponse, HttpRequest};
-use reqwest::Client;
 use scraper::{Html, Selector};
+use reqwest::Client;
 use serde_json::Value;
 use std::fs::File;
 use std::io::Write;
