@@ -6,17 +6,18 @@ This is a rust program that scrapes listings from Goodwillfinds and Ebay.
 Render link: https://webstore-scrapper.onrender.com
 
 ### Python Example
+
+Download python library (https://pypi.org/project/Webstore-ScrapperPY/):
+
 ```
-import requests
-def fetch_data(query):
-    response = requests.get(f'https://webstore-scrapper.onrender.com/search?query={query}')
-    if response.status_code == 200:
-        # Save the CSV content to a file
-        with open('output.csv', 'wb') as f:
-            f.write(response.content)
-    else:
-        print("Failed to retrieve data:", response.status_code)
-fetch_data('user input here')
+pip install Webstore-ScrapperPY
+```
+
+Python Code:
+
+```
+from Webstore_ScrapperPY import fetch_data
+fetch_data('User input here')
 ```
 
 ### JavaScript Example
@@ -83,6 +84,7 @@ int main() {
 ```
 
 ## TODO
-1. Create libraries in Python, Javascript and C/C++ (more languages may be implemented later).
+1. Create libraries in Javascript and C/C++ (more languages may be implemented later).
 2. Add parameters/filtering of the data.
-3. Add additional websites, ex: OfferUp or Craigslist etc...
+3. Add time parameter. User can adjust amount of pages to scrape or the amount of time to scrape.
+4. Add additional websites to scrape, ex: OfferUp or Craigslist etc...
