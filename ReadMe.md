@@ -17,7 +17,7 @@ Python Code:
 
 ```
 from Webstore_ScrapperPY import fetch_data
-fetch_data('laptop')
+fetch_data('User input here')
 ```
 
 ### JavaScript Example
