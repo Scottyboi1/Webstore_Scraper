@@ -81,3 +81,8 @@ int main() {
     return 0;
 }
 ```
+
+## TODO
+1. Create libraries in Python, Javascript and C/C++ (more languages may be implemented later).
+2. Add parameters/filtering of the data.
+3. Add additional websites, ex: OfferUp or Craigslist etc...
