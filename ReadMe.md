@@ -7,16 +7,16 @@ Render link: https://webstore-scrapper.onrender.com
 
 ### Python Example
 
-Download python library (https://pypi.org/project/Webstore-ScrapperPY/):
+Download python library (https://pypi.org/project/Webstore-ScraperPY/):
 
 ```
-pip install Webstore-ScrapperPY
+pip install Webstore-ScraperPY
 ```
 
 Python Code:
 
 ```
-from Webstore_ScrapperPY import fetch_data
+from Webstore_ScraperPY import fetch_data
 fetch_data('User input here')
 ```
 
