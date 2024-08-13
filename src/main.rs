@@ -3,28 +3,19 @@ use reqwest::Client;
 use scraper::{Html, Selector};
 use serde_json::Value;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::{Write};
 use std::fs;
 use anyhow::{Context, Result};
-use std::time::{Instant, Duration};
-use tokio::time::timeout;
 use std::env;
 
 async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
     let base_url = "https://www.goodwillfinds.com/search/?q=";
     let search_url = format!("{}{}", base_url, query);
-    let mut start = 0;
-    let sz = 48;
-    let mut products_found;
-    let start_time = Instant::now();
+    let sz = 48; // Number of items per page
     let mut output = String::new();
 
-    loop {
-        if start_time.elapsed() >= Duration::from_secs(30) {
-            println!("Reached 30 seconds timeout for Goodwill, stopping scrape.");
-            break;
-        }
-
+    for page in 0..10 { // Scrape the first 10 pages
+        let start = page * sz;
         let url = format!("{}&start={}&sz={}", search_url, start, sz);
         println!("Scraping URL: {}", url);
 
@@ -34,9 +25,7 @@ async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
         let document = Html::parse_document(&body);
         let product_selector = Selector::parse(".b-product_tile-actions").unwrap();
 
-        products_found = 0;
         for product in document.select(&product_selector) {
-            products_found += 1;
             if let Some(data_analytics) = product.value().attr("data-analytics") {
                 if let Ok(analytics) = serde_json::from_str::<Value>(data_analytics) {
                     let name = analytics["name"].as_str().unwrap_or("N/A").to_string();
@@ -47,12 +36,6 @@ async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
                 }
             }
         }
-
-        if products_found == 0 {
-            break;
-        }
-
-        start += sz;
     }
 
     Ok(output)
@@ -61,17 +44,9 @@ async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
 async fn scrape_ebay(client: &Client, query: &str) -> Result<String> {
     let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw=";
     let search_url = format!("{}{}", base_url, query);
-    let mut page = 1;
-    let mut products_found;
-    let start_time = Instant::now();
     let mut output = String::new();
 
-    loop {
-        if start_time.elapsed() >= Duration::from_secs(30) {
-            println!("Reached 30 seconds timeout for eBay, stopping scrape.");
-            break;
-        }
-
+    for page in 1..=10 { // Scrape the first 10 pages
         let url = format!("{}&_sacat=0&_nls=2&_dmd=2&_ipg=240&_pgn={}", search_url, page);
         println!("Scraping URL: {}", url);
 
@@ -82,12 +57,8 @@ async fn scrape_ebay(client: &Client, query: &str) -> Result<String> {
         let product_selector = Selector::parse(".s-item").unwrap();
         let title_selector = Selector::parse(".s-item__title").unwrap();
         let price_selector = Selector::parse(".s-item__price").unwrap();
-        let next_page_disabled_selector = Selector::parse(".pagination__next[aria-disabled='true']").unwrap();
 
-        products_found = 0;
         for product in document.select(&product_selector) {
-            products_found += 1;
-
             let raw_title = product.select(&title_selector).next()
                 .map_or("N/A".to_string(), |n| n.text().collect::<Vec<_>>().join("").trim().to_string());
 
@@ -100,13 +71,6 @@ async fn scrape_ebay(client: &Client, query: &str) -> Result<String> {
 
             output.push_str(&format!("{},{}\n", raw_title, price));
         }
-
-        let next_page_disabled = document.select(&next_page_disabled_selector).next();
-        if products_found == 0 || next_page_disabled.is_some() {
-            break;
-        }
-
-        page += 1;
     }
 
     Ok(output)
@@ -119,20 +83,20 @@ async fn search(req: HttpRequest) -> impl Responder {
     // Create a reqwest client
     let client = Client::new();
 
-    // Scrape Goodwill with a 30-second timeout
-    let goodwill_data = match timeout(Duration::from_secs(30), scrape_goodwill(&client, &query_value)).await {
-        Ok(Ok(data)) => data,
-        _ => {
-            println!("Goodwill scraping failed or timed out.");
+    // Scrape Goodwill (first 10 pages)
+    let goodwill_data = match scrape_goodwill(&client, &query_value).await {
+        Ok(data) => data,
+        Err(e) => {
+            println!("Goodwill scraping failed: {}", e);
             String::new()  // Proceed even if Goodwill fails
         }
     };
 
-    // Scrape eBay with a 30-second timeout
-    let ebay_data = match timeout(Duration::from_secs(30), scrape_ebay(&client, &query_value)).await {
-        Ok(Ok(data)) => data,
-        _ => {
-            println!("eBay scraping failed or timed out.");
+    // Scrape eBay (first 10 pages)
+    let ebay_data = match scrape_ebay(&client, &query_value).await {
+        Ok(data) => data,
+        Err(e) => {
+            println!("eBay scraping failed: {}", e);
             String::new()  // Proceed even if eBay fails
         }
     };
