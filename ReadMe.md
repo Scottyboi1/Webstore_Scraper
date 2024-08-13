@@ -10,13 +10,13 @@ Render link: https://webstore-scrapper.onrender.com
 Download python library (https://pypi.org/project/Webstore-ScraperPY/):
 
 ```
-pip install Webstore-ScraperPY
+pip install Webstore-Scraper-PY
 ```
 
 Python Code:
 
 ```
-from Webstore_ScraperPY import fetch_data
+from Webstore-ScraperPY import fetch_data
 fetch_data('User input here')
 ```
 
