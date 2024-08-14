@@ -7,7 +7,7 @@ Render link: https://webstore-scrapper.onrender.com
 
 ### Python Example
 
-Download python library (https://pypi.org/project/Webstore-ScraperPY/):
+Download python library (https://pypi.org/project/Webstore-Scraper-PY/):
 
 ```
 pip install Webstore-Scraper-PY
