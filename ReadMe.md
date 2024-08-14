@@ -16,7 +16,7 @@ pip install Webstore-Scraper-PY
 Python Code:
 
 ```
-from Webstore-ScraperPY import fetch_data
+from Webstore_Scraper_PY import fetch_data
 fetch_data('User input here')
 ```
 
