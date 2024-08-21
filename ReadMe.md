@@ -88,3 +88,4 @@ int main() {
 2. Add parameters/filtering of the data.
 3. Add time parameter. User can adjust amount of pages to scrape or the amount of time to scrape.
 4. Add additional websites to scrape, ex: OfferUp or Craigslist etc...
+5. Python library wrapper needs to be more versatile with user, ie doesn't just give output.csv file
