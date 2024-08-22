@@ -13,20 +13,31 @@ Download python library (https://pypi.org/project/Webstore-Scraper-PY/):
 pip install Webstore-Scraper-PY
 ```
 
-Python Code:
+#### Python Code:
 
-importing:
+##### importing:
 ```
 from Webstore_Scraper_PY import * #imports all functions
+```
+```
 from Webstore_Scraper_PY import fetch_data_text #import specific function
 ```
 
-Python Library has 3 functions:
+##### Python Library has 3 functions:
 
+Fetch Data - fetches the raw content of the APIs response
 ```
 fetch_data('User input her') #fetches the raw content of the APIs response
-fetch_data_csv('User input here') #fetches the data and writes it to output.csv
-fetch_data_text('User input here') #fetches the data and writes it to output.txt
+```
+
+Fetch Data CSV - fetches the data and writes it to output.csv
+```
+fetch_data_csv('User input here')
+```
+
+Fetch Data text - fetches the data and writes it to output.txt
+```
+fetch_data_text('User input here')
 ```
 
 ### JavaScript Example
