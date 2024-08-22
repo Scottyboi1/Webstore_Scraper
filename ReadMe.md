@@ -15,7 +15,7 @@ pip install Webstore-Scraper-PY
 
 Python Code:
 
-importing
+importing:
 ```
 from Webstore_Scraper_PY import * #imports all functions
 from Webstore_Scraper_PY import fetch_data_text #import specific function
