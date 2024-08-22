@@ -1,11 +1,11 @@
 # Webstore_Scrapper API
-## Description
+# Description
 This is a rust program that scrapes listings from Goodwillfinds and Ebay.
-## API Usage
+# API Usage
 
 Render link: https://webstore-scrapper.onrender.com
 
-### Python Example
+## Python Example
 
 Download python library (https://pypi.org/project/Webstore-Scraper-PY/):
 
@@ -13,9 +13,9 @@ Download python library (https://pypi.org/project/Webstore-Scraper-PY/):
 pip install Webstore-Scraper-PY
 ```
 
-#### Python Code:
+### Python Code:
 
-##### importing:
+#### importing:
 ```
 from Webstore_Scraper_PY import * #imports all functions
 ```
@@ -23,7 +23,7 @@ from Webstore_Scraper_PY import * #imports all functions
 from Webstore_Scraper_PY import fetch_data_text #import specific function
 ```
 
-##### Python Library has 3 functions:
+#### Python Library has 3 functions:
 
 Fetch Data - fetches the raw content of the APIs response
 ```
@@ -40,7 +40,7 @@ Fetch Data text - fetches the data and writes it to output.txt
 fetch_data_text('User input here')
 ```
 
-### JavaScript Example
+## JavaScript Example
 ```
 async function fetchData(query) {
     const response = await fetch(`https://webstore-scrapper.onrender.com/search?query=${query}`);
@@ -62,7 +62,7 @@ async function fetchData(query) {
 fetchData('user input here');
 ```
 
-### C/C++ Example
+## C/C++ Example
 ```
 #include <curl/curl.h>
 #include <iostream>
