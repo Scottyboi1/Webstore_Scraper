@@ -1,6 +1,7 @@
 # Webstore_Scrapper API
 # Description
-This is a rust program that scrapes listings from Goodwillfinds and Ebay.
+This is a rust program that scrapes listings from Goodwillfinds.
+Note: Found out Ebay prohibits bots from scraping their cite so this API will no longer support scraping Ebay.
 # API Usage
 
 Render link: https://webstore-scrapper.onrender.com
@@ -107,5 +108,5 @@ int main() {
 1. Create libraries in Javascript and C/C++ (more languages may be implemented later).
 2. Add parameters/filtering of the data.
 3. Add time parameter. User can adjust amount of pages to scrape or the amount of time to scrape.
-4. Add additional websites to scrape, ex: OfferUp or Craigslist etc...
+4. Add additional websites to scrape, ex: OfferUp or Craigslist etc... (Get permissions)
 5. Python library wrapper needs to be more versatile with user, ie doesn't just give output.csv file
