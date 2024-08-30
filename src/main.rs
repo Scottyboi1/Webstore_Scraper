@@ -63,7 +63,8 @@ async fn scrape_goodwill(client: &Client, query: &str) -> Result<String> {
     Ok(output)
 }
 
-////////////////////FUNCTION TO SCRAPE EBAY////////////////////
+////////////////////FUNCTION TO SCRAPE EBAY NOT SUPPORTED////////////////////
+/*
 async fn scrape_ebay(client: &Client, query: &str) -> Result<String> {
     ////Initialize variables////
     let base_url = "https://www.ebay.com/sch/i.html?_from=R40&_nkw="; //Ebays base URL
@@ -120,6 +121,7 @@ async fn scrape_ebay(client: &Client, query: &str) -> Result<String> {
 
     Ok(output)
 }
+*/
 
 ////Search function to handle HTTP requests and start scraping////
 async fn search(req: HttpRequest) -> impl Responder {
@@ -138,7 +140,8 @@ async fn search(req: HttpRequest) -> impl Responder {
         }
     };
 
-    //Start scraping eBay
+    //Start scraping eBay//
+    /*
     let ebay_data = match scrape_ebay(&client, &query_value).await {
         Ok(data) => data,
         _ => {
@@ -146,9 +149,10 @@ async fn search(req: HttpRequest) -> impl Responder {
             String::new()
         }
     };
+    */
 
     //Combine the data from both scrapes//
-    let combined_output = format!("{}\n{}", goodwill_data, ebay_data);
+    let combined_output = format!("{}", goodwill_data,);
 
     //Write the output to a CSV file//
     let file_path = "output.csv";
