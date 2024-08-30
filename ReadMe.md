@@ -1,26 +1,48 @@
 # Webstore_Scrapper API
-## Description
-This is a rust program that scrapes listings from Goodwillfinds and Ebay.
-## API Usage
+# Description
+This is a rust program that scrapes listings from Goodwillfinds.
+
+Note: Found out Ebay prohibits bots from scraping their cite so this API will no longer support scraping Ebay.
+# API Usage
 
 Render link: https://webstore-scrapper.onrender.com
 
-### Python Example
+## Python Example
 
-Download python library (https://pypi.org/project/Webstore-ScrapperPY/):
-
-```
-pip install Webstore-ScrapperPY
-```
-
-Python Code:
+Download python library (https://pypi.org/project/Webstore-Scraper-PY/):
 
 ```
-from Webstore_ScrapperPY import fetch_data
-fetch_data('User input here')
+pip install Webstore-Scraper-PY
 ```
 
-### JavaScript Example
+### Python Code:
+
+#### importing:
+```
+from Webstore_Scraper_PY import * #imports all functions
+```
+```
+from Webstore_Scraper_PY import fetch_data_text #import a single function
+```
+
+#### Python Library has 3 functions:
+
+Fetch Data - fetches the raw content of the APIs response
+```
+fetch_data('User input her')
+```
+
+Fetch Data CSV - fetches the data and writes it to output.csv
+```
+fetch_data_csv('User input here')
+```
+
+Fetch Data text - fetches the data and writes it to output.txt
+```
+fetch_data_text('User input here')
+```
+
+## JavaScript Example
 ```
 async function fetchData(query) {
     const response = await fetch(`https://webstore-scrapper.onrender.com/search?query=${query}`);
@@ -42,7 +64,7 @@ async function fetchData(query) {
 fetchData('user input here');
 ```
 
-### C/C++ Example
+## C/C++ Example
 ```
 #include <curl/curl.h>
 #include <iostream>
@@ -87,4 +109,5 @@ int main() {
 1. Create libraries in Javascript and C/C++ (more languages may be implemented later).
 2. Add parameters/filtering of the data.
 3. Add time parameter. User can adjust amount of pages to scrape or the amount of time to scrape.
-4. Add additional websites to scrape, ex: OfferUp or Craigslist etc...
+4. Add additional websites to scrape, ex: OfferUp or Craigslist etc... (Get permissions)
+5. Python library wrapper needs to be more versatile with user, ie doesn't just give output.csv file
