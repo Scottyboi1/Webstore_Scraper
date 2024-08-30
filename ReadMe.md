@@ -1,6 +1,7 @@
 # Webstore_Scrapper API
 # Description
 This is a rust program that scrapes listings from Goodwillfinds.
+
 Note: Found out Ebay prohibits bots from scraping their cite so this API will no longer support scraping Ebay.
 # API Usage
 
